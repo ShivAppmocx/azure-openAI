@@ -1,0 +1,8 @@
+numpy
+pandas
+streamlit
+# openai
+python-dotenv
+mysql-connector-python
+openpyxl
+openai==0.28
