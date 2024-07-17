@@ -6,6 +6,7 @@ from prompts.prompts import SYSTEM_MESSAGE
 from azure_openai import get_completion_from_messages
 import json
 
+
 def query_database(query, conn):
     """ Run SQL query and return results in a dataframe """
     return pd.read_sql_query(query, conn)
