@@ -9,6 +9,7 @@ from azure_openai import get_completion_from_messages
 import json
 import re
 
+
 def append_group_by(query):
     # Regular expression to find column numbers in SELECT statement
     pattern = r'SELECT\s+(.*?)\s+FROM'
