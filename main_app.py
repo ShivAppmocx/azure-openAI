@@ -17,16 +17,18 @@ conn = sql_db.create_connection()
 
 # Schema Representation for finances table
 schemas = sql_db.get_schema_representation()
-print(schemas['PurchaseOrders'])
+print(schemas['data-poc'])
 
 # Format the system message with the schema
-formatted_system_message = SYSTEM_MESSAGE.format(schema=schemas['PurchaseOrders'])
+formatted_system_message = SYSTEM_MESSAGE.format(schema=schemas['data-poc'])
 
 # Generate the SQL query from the user message
 user_message = "Show me all expenses greater than 1000"
 
-# Use GPT-4 to generate the SQL query
+#&nbsp;Use GPT-4 to generate the SQL query
 response = get_completion_from_messages(formatted_system_message, user_message)
+print(f"response",response)
+exit()
 json_response = json.loads(response)
 query = json_response['query']
 print(query)
