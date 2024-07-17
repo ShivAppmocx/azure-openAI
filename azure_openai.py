@@ -10,8 +10,8 @@ openai.api_type = "azure"
 # openai.api_base = "https://ai-fab-rag-model.openai.azure.com/"
 openai.api_base = "https://fabric-poc.openai.azure.com/"
 openai.api_version = "2023-03-15-preview"
-openai.api_key = os.getenv("OPENAI_API_KEY")
-# openai.api_key = "7f3b4c1fca7e465f8a4f0b5a2c065113"
+#openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = "5a3e842aa1b14dc7b092553422349c8d"
 
 def get_completion_from_messages(system_message, user_message, model="gpt-4", temperature=0, max_tokens=500) -> str:
 
