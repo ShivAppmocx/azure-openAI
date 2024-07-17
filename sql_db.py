@@ -1,216 +1,82 @@
-import mysql.connector
-from mysql.connector import Error
+import pyodbc
 import pandas as pd
-from datetime import datetime
 
-DATABASE_NAME = "PurchaseOrdersDB"
+# Replace these with your actual Azure SQL Database credentials
+server = 'sqldemoserver-poc.database.windows.net'
+database = 'pocdata'
+username = 'sqldemoserver-poc'
+password = 'Appmocx@ai'
 
 def create_connection():
-    """ Create or connect to a MySQL database """
+    """ Create or connect to an Azure SQL Database """
     conn = None
     try:
-        conn = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='shivam@123',
-            database=DATABASE_NAME
-        )
-    except Error as e:
-        print(e)
+        conn = pyodbc.connect(
+            f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};PORT=1433;DATABASE={database};UID={username};PWD={password}')
+        print("Connection established successfully.")
+    except pyodbc.Error as e:
+        print(f"Error while connecting to SQL Server: {e}")
     return conn
 
-def create_database():
-    """ Create a database if it does not exist """
-    conn = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='shivam@123'
-    )
-    cursor = conn.cursor()
-    cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME}")
-    conn.close()
-
-def create_table(conn, create_table_sql):
-    """ Create a table with the specified SQL command """
-    try:
-        cursor = conn.cursor()
-        cursor.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-def insert_data(conn, table_name, data_dict):
-    """ Insert new data into a table """
-    columns = ', '.join(data_dict.keys())
-    placeholders = ', '.join(['%s'] * len(data_dict))
-    sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-    
-    # Convert date strings to datetime objects
-    for key, value in data_dict.items():
-        if isinstance(value, str) and key.endswith("_DATE"):
-            try:
-                data_dict[key] = datetime.strptime(value, '%Y-%m-%d').date()
-            except ValueError:
-                data_dict[key] = None  # Handle invalid date format
-    
-    # Insert data into the database
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, list(data_dict.values()))
-        conn.commit()
-        return cursor.lastrowid
-    except Error as e:
-        print(f"Error inserting data: {e}")
+def query_database(query):
+    """ Run SQL query and return results in a dataframe """
+    conn = create_connection()
+    if conn is not None:
+        try:
+            df = pd.read_sql(query, conn)
+            conn.close()
+            return df
+        except Exception as e:
+            print(f"Error while querying database: {e}")
+            return None
+    else:
+        print("Failed to establish connection to the database.")
         return None
 
-def setup_purchase_orders_table():
-    conn = create_connection()
-    sql_create_purchase_orders_table = """
-    CREATE TABLE IF NOT EXISTS PurchaseOrders (
-        CLIENT INT,
-        PURCHASE_ORDER_NUMBER BIGINT,
-        COMPANY_CODE INT,
-        PURCHASING_ORGANIZATION VARCHAR(255),
-        PURCHASING_GROUP VARCHAR(255),
-        PURCHASING_DOCUMENT_TYPE VARCHAR(255),
-        PURCHASE_ORDER_DATE DATE,
-        CONDITION_RECORD_NUMBER BIGINT,
-        VENDOR_ACCOUNT_NUMBER BIGINT,
-        TERMS_OF_PAYMENT_KEY VARCHAR(255),
-        CURRENCY VARCHAR(10),
-        EXCHANGE_RATE DOUBLE,
-        GOODS_RECEIPT_DATE DATE,
-        RELEASE_GROUP VARCHAR(255),
-        RELEASE_CODE VARCHAR(255),
-        RELEASE_STATUS VARCHAR(255),
-        RELEASE_INDICATOR VARCHAR(255),
-        CHANGE_DATE DATE,
-        PURCHASE_ORDER_LINE_ITEM VARCHAR(255),
-        PURCHASE_REQUISITION_ITEM_NUMBER INT,
-        DELETION_INDICATOR VARCHAR(10),
-        STATUS VARCHAR(255),
-        SERVICE_BASED_INVOICE_VERIFICATION_INDICATOR VARCHAR(10),
-        GOODS_RECEIPT_INDICATOR VARCHAR(10),
-        MATERIAL_NUMBER BIGINT,
-        VENDOR_MATERIAL_NUMBER VARCHAR(255),
-        PLANT VARCHAR(255),
-        STORAGE_LOCATION VARCHAR(255),
-        MATERIAL_GROUP VARCHAR(255),
-        PURCHASING_INFO_RECORD_NUMBER BIGINT,
-        GL_ACCOUNT_NUMBER BIGINT,
-        ACCOUNT_ASSIGNMENT_CATEGORY VARCHAR(255),
-        ITEM_NUMBER_RESERVATION INT,
-        VALUATION_TYPE_COMPANY_CODE VARCHAR(255),
-        VALUATION_TYPE VARCHAR(255),
-        GR_REVERSAL_INDICATOR VARCHAR(10),
-        LINE_NUMBER_ACCOUNT_ASSIGNMENT INT,
-        OVERDELIVERY_TOLERANCE DOUBLE,
-        RETURNS_ITEM VARCHAR(10),
-        SPECIAL_STOCK_INDICATOR VARCHAR(10),
-        CONTRACT_NUMBER BIGINT,
-        AGREEMENT_ITEM_NUMBER INT,
-        ITEM_CATEGORY VARCHAR(255),
-        TAX_JURISDICTION_CODE VARCHAR(255),
-        DELIVERY_COSTS DOUBLE,
-        ORDER_UNIT VARCHAR(255),
-        QUANTITY DOUBLE,
-        NET_PRICE DOUBLE,
-        NET_ORDER_VALUE DOUBLE,
-        TAX_CODE VARCHAR(10),
-        PRIMARY KEY (PURCHASE_ORDER_NUMBER)
-    );
-    """
-    create_table(conn, sql_create_purchase_orders_table)
-
-    # Load the data from the Excel file
-    excel_file_path = "Purchase Document.xlsx"
-    df = pd.read_excel(excel_file_path, engine='openpyxl')
-
-    # Insert data into the table
-    for _, row in df.iterrows():
-        data = {
-            "CLIENT": row['CLIENT'],
-            "PURCHASE_ORDER_NUMBER": row['PURCHASE ORDER NUMBER'],
-            "COMPANY_CODE": row['COMPANY CODE'],
-            "PURCHASING_ORGANIZATION": row['PURCHASING ORGANIZATION'],
-            "PURCHASING_GROUP": row['PURCHASING GROUP'],
-            "PURCHASING_DOCUMENT_TYPE": row['PURCHASING DOCUMENT TYPE'],
-            "PURCHASE_ORDER_DATE": row['PURCHASE ORDER DATE'],
-            "CONDITION_RECORD_NUMBER": row['CONDITION RECORD NUMBER'],
-            "VENDOR_ACCOUNT_NUMBER": row['VENDOR ACCOUNT NUMBER'],
-            "TERMS_OF_PAYMENT_KEY": row['TERMS OF PAYMENT KEY'],
-            "CURRENCY": row['CURRENCY'],
-            "EXCHANGE_RATE": row['EXCHANGE RATE'],
-            "GOODS_RECEIPT_DATE": row['GOODS RECEIPT DATE'],
-            "RELEASE_GROUP": row['RELEASE GROUP'],
-            "RELEASE_CODE": row['RELEASE CODE'],
-            "RELEASE_STATUS": row['RELEASE STATUS'],
-            "RELEASE_INDICATOR": row['RELEASE INDICATOR'],
-            "CHANGE_DATE": row['CHANGE DATE'],
-            "PURCHASE_ORDER_LINE_ITEM": row['PURCHASE ORDER LINE ITEM'],
-            "PURCHASE_REQUISITION_ITEM_NUMBER": row['PURCHASE REQUISITION ITEM NUMBER'],
-            "DELETION_INDICATOR": row['DELETION INDICATOR'],
-            "STATUS": row['STATUS'],
-            "SERVICE_BASED_INVOICE_VERIFICATION_INDICATOR": row['SERVICE BASED INVOICE VERIFICATION INDICATOR'],
-            "GOODS_RECEIPT_INDICATOR": row['GOODS RECEIPT INDICATOR'],
-            "MATERIAL_NUMBER": row['MATERIAL NUMBER'],
-            "VENDOR_MATERIAL_NUMBER": row['VENDOR MATERIAL NUMBER'],
-            "PLANT": row['PLANT'],
-            "STORAGE_LOCATION": row['STORAGE LOCATION'],
-            "MATERIAL_GROUP": row['MATERIAL GROUP'],
-            "PURCHASING_INFO_RECORD_NUMBER": row['PURCHASING INFO RECORD NUMBER'],
-            "GL_ACCOUNT_NUMBER": row['GL ACCOUNT NUMBER'],
-            "ACCOUNT_ASSIGNMENT_CATEGORY": row['ACCOUNT ASSIGNMENT CATEGORY'],
-            "ITEM_NUMBER_RESERVATION": row['ITEM NUMBER RESERVATION'],
-            "VALUATION_TYPE_COMPANY_CODE": row['VALUATION TYPE COMPANY CODE'],
-            "VALUATION_TYPE": row['VALUATION TYPE'],
-            "GR_REVERSAL_INDICATOR": row['GR REVERSAL INDICATOR'],
-            "LINE_NUMBER_ACCOUNT_ASSIGNMENT": row['LINE NUMBER ACCOUNT ASSIGNMENT'],
-            "OVERDELIVERY_TOLERANCE": row['OVERDELIVERY TOLERANCE'],
-            "RETURNS_ITEM": row['RETURNS ITEM'],
-            "SPECIAL_STOCK_INDICATOR": row['SPECIAL STOCK INDICATOR'],
-            "CONTRACT_NUMBER": row['CONTRACT NUMBER'],
-            "AGREEMENT_ITEM_NUMBER": row['AGREEMENT ITEM NUMBER'],
-            "ITEM_CATEGORY": row['ITEM CATEGORY'],
-            "TAX_JURISDICTION_CODE": row['TAX JURISDICTION CODE'],
-            "DELIVERY_COSTS": row['DELIVERY COSTS'],
-            "ORDER_UNIT": row['ORDER UNIT'],
-            "QUANTITY": row['QUANTITY'],
-            "NET_PRICE": row['NET PRICE'],
-            "NET_ORDER_VALUE": row['NET ORDER VALUE'],
-            "TAX_CODE": row['TAX CODE']
-        }
-        insert_data(conn, "PurchaseOrders", data)
-
-    conn.close()
-
-
 def get_schema_representation():
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="shivam@123",
-        database=DATABASE_NAME
-    )
-    cursor = conn.cursor()
- 
-    # Fetch all tables
-    cursor.execute("SHOW TABLES;")
-    tables = cursor.fetchall()
- 
-    schema = {}
-    for table in tables:
-        table_name = table[0]
-        cursor.execute(f"DESCRIBE {table_name};")
-        columns = cursor.fetchall()
-        table_schema = [{"name": col[0], "type": col[1]} for col in columns]
-        schema[table_name] = table_schema
- 
-    conn.close()
-    return schema
+    """ Get the database schema in a JSON-like format """
+    conn = create_connection()
+    if conn is not None:
+        try:
+            cursor = conn.cursor()
+            
+            # Query to get all table names
+            cursor.execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+            tables = cursor.fetchall()
+            
+            db_schema = {}
+            
+            for table in tables:
+                table_name = table[0]
+                
+                # Query to get column details for each table
+                cursor.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'")
+                columns = cursor.fetchall()
+                
+                column_details = {}
+                for column in columns:
+                    column_name = column[0]
+                    column_type = column[1]
+                    column_details[column_name] = column_type
+                
+                db_schema[table_name] = column_details
+            
+            conn.close()
+            return db_schema
+        except Exception as e:
+            print(f"Error while fetching schema: {e}")
+            return None
+    else:
+        print("Failed to establish connection to the database.")
+        return None
 
 if __name__ == "__main__":
-    create_database()
-    setup_purchase_orders_table()
-    # print(query_database("SELECT * FROM PurchaseOrders LIMIT 50"))
+    # Example query to fetch data from your table
+    result_df = query_database("SELECT TOP 50 * FROM PurchaseOrders")
+    if result_df is not None:
+        print(result_df)
 
-    print(get_schema_representation())
+    # Getting the schema representation
+    schema = get_schema_representation()
+    if schema is not None:
+        print(schema)
