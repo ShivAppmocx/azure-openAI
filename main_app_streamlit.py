@@ -112,10 +112,10 @@ if user_message:
 
         # Save the DataFrame to a CSV file
         sql_results.to_csv('query_results.csv', index=False)
-        st.write("Query results saved to 'query_results.csv'.")
+        # st.write("Query results saved to 'query_results.csv'.")
 
         # Choose the plot type
-        plot_type = st.selectbox("Select plot type", ["bar", "line", "scatter", "pie"]) #, "box"])
+        plot_type = st.selectbox("Select Graph Type", ["bar", "line", "scatter", "pie"]) #, "box"])
         
         if st.button("Generate Plot"):
             # Plot the data
