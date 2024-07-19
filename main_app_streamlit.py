@@ -17,11 +17,11 @@ conn = sql_db.create_connection()
 # Schema Representation for finances table
 schemas = sql_db.get_schema_representation()
 
-st.title("SQL Query Generator with GPT-4")
-st.write("Enter your message to generate SQL and view results.")
+st.title("Data Analytics Assistant")
+# st.write("Enter your message to generate SQL and view results.")
 
 # Input field for the user to type a message
-user_message = st.text_input("Enter your message:")
+user_message = st.text_input("How may i help you!")
 
 if user_message:
     # Format the system message with the schema
@@ -44,13 +44,13 @@ if user_message:
     query_like = query.replace('=', 'LIKE')
 
     # Display the generated SQL query
-    st.write("Generated SQL Query:")
-    st.code(query_like, language="sql")
+    # st.write("Generated SQL Query:")
+    # st.code(query_like, language="sql")
 
     try:
         # Run the SQL query and display the results
         sql_results = query_database(query_like, conn)
-        st.write("Query Results:")
+        st.write("Results:")
         st.dataframe(sql_results)
 
     except Exception as e:
