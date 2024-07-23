@@ -100,8 +100,8 @@ if user_message:
     query_like = query.replace('=', 'LIKE')
 
     # Display the generated SQL query
-    # st.write("Generated SQL Query:")
-    # st.code(query_like, language="sql")
+    st.write("Generated SQL Query:")
+    st.code(query_like, language="sql")
 
     try:
         # Run the SQL query and display the results
