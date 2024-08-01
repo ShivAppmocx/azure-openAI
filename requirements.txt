@@ -8,3 +8,4 @@ openpyxl
 openai==0.28
 pyodbc
 matplotlib
+streamlit-aggrid

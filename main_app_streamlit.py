@@ -1,3 +1,4 @@
+
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -5,6 +6,9 @@ import sql_db
 from prompts.reference_prompt import SYSTEM_MESSAGE
 from azure_openai import get_completion_from_messages
 import json
+
+from st_aggrid import AgGrid, GridOptionsBuilder
+
 
 
 def query_database(query, conn):
@@ -48,11 +52,36 @@ if user_message:
     st.write("Generated SQL Query:")
     st.code(query_like, language="sql")
 
+    
     try:
         # Run the SQL query and display the results
         sql_results = query_database(query_like, conn)
+        # st.write("Results:")
+        # st.dataframe(sql_results)
+
+        df = pd.DataFrame(sql_results)
+        #  # Configure AgGrid options
+        gb = GridOptionsBuilder.from_dataframe(df)
+        is_fit_column = True
+        if "PURCHASE ORDER NUMBER" in sql_results.columns:
+            is_fit_column = False
+            gb.configure_column("PURCHASE ORDER NUMBER", pinned="left")  # Freeze this column
+        
+        cell_style = {'textAlign': 'center'}
+        # header_style = {'textAlign': 'left'}
+        # gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True,  cellStyle=cell_style, headerStyle=header_style)
+        gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True,  cellStyle=cell_style)
+
+        # Add custom CSS for header alignment
+       
+        gb.configure_grid_options(domLayout='autoHeight')
+
+        gridOptions = gb.build()
+
+        # Display the DataFrame with AgGrid
         st.write("Results:")
-        st.dataframe(sql_results)
+        AgGrid(df, gridOptions=gridOptions, fit_columns_on_grid_load=is_fit_column, enable_enterprise_modules=True)
+
 
     except Exception as e:
         st.write(f"An error occurred: {e}")

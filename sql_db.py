@@ -190,15 +190,15 @@ if __name__ == "__main__":
         print("Database schema:")
         print(schema)
 
-        # Find common columns
-        common_columns = find_common_columns(schema)
-        print("Common columns across tables:")
-        print(common_columns)
+        # # Find common columns
+        # common_columns = find_common_columns(schema)
+        # print("Common columns across tables:")
+        # print(common_columns)
 
-        # Query tables with common columns
-        results = query_tables_with_join(schema, common_columns)
-        for key, df in results.items():
-            print(f"\nData from {key}:")
+        # # Query tables with common columns
+        # results = query_tables_with_join(schema, common_columns)
+        # for key, df in results.items():
+        #     print(f"\nData from {key}:")
             #print(df)
     else:
         print("Failed to retrieve schema representation.")
