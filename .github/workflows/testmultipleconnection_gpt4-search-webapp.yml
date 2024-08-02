@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'gpt4-search-webApp'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_663EC356CDA048A3A2CE7ED98736A89D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0DCAFFBB68BC4A6A89E85D7567DBE802 }}
