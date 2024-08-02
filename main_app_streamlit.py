@@ -57,7 +57,7 @@ if user_message:
         # Run the SQL query and display the results
         sql_results = query_database(query_like, conn)
         # st.write("Results:")
-        st.dataframe(sql_results)
+        # st.dataframe(sql_results)
 
         # Assuming sql_results is a DataFrame containing your query results
         df = pd.DataFrame(sql_results)
